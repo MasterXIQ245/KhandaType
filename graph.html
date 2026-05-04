@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KhandaType - Results</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="results-page">
+    <main style="width: 850px; margin: 40px auto;">
+        <h1 style="margin-bottom: 30px;">Results</h1>
+        
+        <div id="stats-summary" style="display: flex; gap: 50px; margin-bottom: 20px;">
+            <div>
+                <div style="color: var(--textSecondary); font-size: 0.8rem; text-transform: uppercase;">wpm</div>
+                <div id="final-wpm" style="font-size: 4rem; color: var(--primaryColor); font-family: 'Roboto Mono';">0</div>
+            </div>
+            <div>
+                <div style="color: var(--textSecondary); font-size: 0.8rem; text-transform: uppercase;">acc</div>
+                <div id="final-acc" style="font-size: 4rem; color: var(--primaryColor); font-family: 'Roboto Mono';">0%</div>
+            </div>
+        </div>
+
+        <div style="height: 300px; width: 100%; margin-bottom: 30px;"><canvas id="resultChart"></canvas></div>
+
+        <div id="missed-keys-container" style="color: var(--textSecondary); font-family: 'Roboto Mono';"></div>
+
+        <div style="margin-top: 40px;">
+            <button onclick="window.location.href='index.html'" id="saveSettings">Try Again (Tab)</button>
+        </div>
+    </main>
+
+    <script>
+        const rawData = JSON.parse(localStorage.getItem('lastGameData') || '[]');
+        const missed = JSON.parse(localStorage.getItem('missedKeys') || '{}');
+        
+        document.getElementById('final-wpm').innerText = localStorage.getItem('lastWpm');
+        document.getElementById('final-acc').innerText = localStorage.getItem('lastAcc') + '%';
+
+        // Add Top Speed
+        const topWpm = Math.max(...rawData.map(d => d.wpm), 0);
+        document.getElementById('stats-summary').innerHTML += `<div><div style="color:var(--textSecondary); font-size:0.8rem">TOP SPEED</div><div style="font-size:4rem; color:var(--textSecondary); font-family:'Roboto Mono'">${topWpm}</div></div>`;
+
+        // Display Missed Keys
+        const sortedMissed = Object.entries(missed).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        if (sortedMissed.length > 0) {
+            document.getElementById('missed-keys-container').innerHTML = `<h3>Top Missed Keys:</h3>` + sortedMissed.map(x => `<span>'${x[0]}' (${x[1]}x)</span>`).join(' | ');
+        }
+
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: rawData.map(d => d.second),
+                datasets: [{
+                    label: 'WPM',
+                    data: rawData.map(d => d.wpm),
+                    borderColor: '#e2b714',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(226, 183, 20, 0.1)'
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { grid: { display: false }, ticks: { color: '#646669' } },
+                    y: { grid: { color: '#323437' }, ticks: { color: '#646669' } }
+                }
+            }
+        });
+        document.addEventListener('keydown', ev => { if(ev.key === 'Tab') window.location.href='index.html'; });
+    </script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&display=swap');
+
+/* --- 1. Root Variables (Default Carbon Theme) --- */
+:root {
+    --bgColor: #323437;
+    --textPrimary: #d1d0c5;
+    --textSecondary: #646669;
+    --primaryColor: #e2b714;
+    --errorColor: #ca4754;
+}
+
+/* --- 2. Base Styles --- */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bgColor);
+    color: var(--textPrimary);
+    margin: 0;
+    transition: background 0.3s, color 0.3s;
+    overflow-x: hidden;
+}
+
+main {
+    width: 900px;
+    margin: 80px auto;
+}
+
+h1 {
+    color: var(--primaryColor);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    fill: var(--primaryColor);
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+}
+
+/* --- 3. Live Stats Bar --- */
+#live-stats {
+    display: flex;
+    gap: 25px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--textSecondary);
+    margin-bottom: 15px;
+    height: 25px;
+}
+
+/* --- 4. Header & Controls --- */
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 10;
+}
+
+#info {
+    color: var(--primaryColor);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 2.5rem;
+}
+
+#nav-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+
+
+button {
+    background: transparent;
+    border: 1px solid var(--textSecondary);
+    color: var(--textSecondary);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    color: var(--textPrimary);
+    border-color: var(--textPrimary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- 5. Game Area --- */
+#game {
+    line-height: 45px;
+    height: 135px;
+    overflow: hidden;
+    /* CRITICAL: This must be relative so the focus message stays inside */
+    position: relative; 
+    outline: none;
+    font-size: 1.6rem;
+}
+
+#focus-error {
+    position: absolute;
+    /* This makes it cover the entire game area */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(32, 34, 37, 0.9); /* Match your bgColor */
+    color: var(--primaryColor);
+    z-index: 99; /* Make sure it sits on top of words */
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    transition: opacity 0.2s;
+}
+
+/* This hides the message only when the game has focus */
+#game:focus #focus-error {
+    display: none;
+    pointer-events: none;
+}
+
+#words {
+    color: var(--textSecondary);
+    filter: blur(5px);
+    opacity: 0.4;
+    transition: margin-top 0.25s ease, filter 0.3s, opacity 0.3s;
+}
+
+#game:focus #words {
+    filter: blur(0);
+    opacity: 1;
+}
+
+/* Master Mode Blur */
+#game.master-blur #words {
+    filter: blur(12px) !important;
+}
+
+.word {
+    display: inline-block;
+    margin: 0 10px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.letter.correct { color: var(--textPrimary); }
+.letter.incorrect { color: var(--errorColor); }
+.letter.extra { opacity: 0.6; }
+
+/* Cursor Styling */
+#cursor {
+    width: 2px;
+    height: 1.6rem;
+    background: var(--primaryColor);
+    position: absolute;
+    display: none;
+    transition: all 0.08s linear;
+    animation: blink 1s infinite;
+}
+
+#game:focus #cursor { display: block; }
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Focus Error Message */
+#focus-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primaryColor);
+    background: rgba(50, 52, 55, 0.8);
+    z-index: 5;
+    cursor: pointer;
+}
+
+#game:focus #focus-error { display: none; }
+
+/* --- 6. Settings Modal --- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: var(--bgColor);
+    padding: 35px;
+    border: 1px solid var(--textSecondary);
+    width: 450px;
+    border-radius: 12px;
+}
+
+.setting-group { margin-bottom: 20px; }
+.setting-group label { display: block; color: var(--textSecondary); margin-bottom: 8px; }
+
+.checkboxes { display: flex; flex-direction: column; gap: 10px; }
+.checkboxes label { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+
+#saveSettings {
+    width: 100%;
+    background: var(--primaryColor);
+    color: var(--bgColor);
+    font-weight: bold;
+    border: none;
+    padding: 14px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+/* --- 7. Theme Engine Classes --- */
+body.cyberpunk {
+    --bgColor: #000000;
+    --primaryColor: #00ff00;
+    --textPrimary: #00ff00;
+    --textSecondary: #004400;
+    --errorColor: #ff003c;
+}
+#focus-error {
+    position: absolute;
+    inset: 0;
+    background: rgba(50, 52, 55, 0.9); /* Dark overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    cursor: pointer;
+}
+
+/* This is the part that hides it */
+#game:focus #focus-error {
+    display: none;
+}
+
+body.lavender {
+    --bgColor: #2e1a47;
+    --primaryColor: #be95ff;
+    --textPrimary: #be95ff;
+    --textSecondary: #5a4282;
+}
+
+body.monokai {
+    --bgColor: #272822;
+    --primaryColor: #f92672;
+    --textPrimary: #f8f8f2;
+    --textSecondary: #75715e;
+}
