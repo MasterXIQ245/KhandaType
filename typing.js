@@ -82,10 +82,12 @@ function newGame() {
         wordContainer.appendChild(wordDiv);
     }
 
-    document.querySelector('.word').classList.add('current');
-    document.querySelector('.letter').classList.add('current');
-    document.getElementById('game').focus();
+    const firstWord = document.querySelector('.word');
+    const firstLetter = document.querySelector('.letter');
+    if(firstWord) firstWord.classList.add('current');
+    if(firstLetter) firstLetter.classList.add('current');
     
+    document.getElementById('game').focus();
     setTimeout(updateCursor, 10);
 }
 
@@ -106,14 +108,21 @@ function gameOver() {
 
 document.getElementById('game').addEventListener('keydown', ev => {
     const key = ev.key;
-    if (key === 'Tab') { ev.preventDefault(); newGame(); return; } 
+    
+    // Always allow Tab for restart
+    if (key === 'Tab') { 
+        ev.preventDefault(); 
+        newGame(); 
+        return; 
+    } 
+
     if (!gameActive) return;
 
     const currentWord = document.querySelector('.word.current');
     let currentLetter = document.querySelector('.letter.current');
     const expected = currentLetter?.innerText || ' ';
 
-    // Timer Start
+    // Start Timer on first keypress
     if (!timer && key.length === 1) {
         window.gameStart = Date.now();
         timer = setInterval(() => {
@@ -126,7 +135,7 @@ document.getElementById('game').addEventListener('keydown', ev => {
         }, 1000);
     }
 
-    // Input Handling
+    // Handle Normal Character Typing
     if (key.length === 1 && key !== ' ') {
         stats.typed++;
         const isCorrect = key === expected;
@@ -151,15 +160,15 @@ document.getElementById('game').addEventListener('keydown', ev => {
         }
     } 
 
-    // Spacebar Logic (Fixed: Handles unfinished letters)
+    // Handle Spacebar (Moving to next word)
     else if (key === ' ') {
-        ev.preventDefault();
+        ev.preventDefault(); // Prevent page scrolling
         
         // Mark all remaining letters in the current word as incorrect
         const remainingLetters = currentWord.querySelectorAll('.letter:not(.correct):not(.incorrect)');
         remainingLetters.forEach(l => {
             l.classList.add('incorrect');
-            stats.typed++; // Counts as a typed character (but wrong)
+            stats.typed++; // Count skipped letters toward accuracy
         });
 
         if (currentWord.nextSibling) {
@@ -168,7 +177,7 @@ document.getElementById('game').addEventListener('keydown', ev => {
             
             const nextWord = currentWord.nextSibling;
             nextWord.classList.add('current');
-            nextWord.firstChild.classList.add('current');
+            if (nextWord.firstChild) nextWord.firstChild.classList.add('current');
 
             // Scroll Logic
             const wordRect = nextWord.getBoundingClientRect();
@@ -181,21 +190,23 @@ document.getElementById('game').addEventListener('keydown', ev => {
         }
     }
 
-    if (key === 'Backspace' && !settings.noBackspace) {
-        const letters = currentWord.querySelectorAll('.letter');
-        const index = Array.from(letters).indexOf(currentLetter);
+    // Handle Backspace
+    else if (key === 'Backspace' && !settings.noBackspace) {
+        const letters = Array.from(currentWord.querySelectorAll('.letter'));
+        const index = letters.indexOf(currentLetter);
 
-        if (index > 0 || (!currentLetter && letters.length > 0)) {
-            if (!currentLetter) {
-                // We are at the end of the word
-                const last = letters[letters.length - 1];
-                last.classList.remove('correct', 'incorrect');
-                last.classList.add('current');
-            } else {
+        if (index > 0 || (currentLetter === null && letters.length > 0)) {
+            if (currentLetter) {
+                // Moving back from middle of word
                 const prev = currentLetter.previousSibling;
                 currentLetter.classList.remove('current');
                 prev.classList.remove('correct', 'incorrect');
                 prev.classList.add('current');
+            } else {
+                // Moving back from the very end of a word
+                const last = letters[letters.length - 1];
+                last.classList.remove('correct', 'incorrect');
+                last.classList.add('current');
             }
         }
     }
@@ -204,20 +215,29 @@ document.getElementById('game').addEventListener('keydown', ev => {
     updateLiveStats();
 });
 
-// UI Controls
+// --- 5. UI Controls ---
 const modal = document.getElementById('settingsModal');
+
 document.getElementById('newGameBtn').onclick = () => newGame();
-document.getElementById('settingsBtn').onclick = () => modal.classList.add('active');
+
+document.getElementById('settingsBtn').onclick = () => {
+    modal.classList.add('active');
+};
+
 document.getElementById('saveSettings').onclick = () => {
     settings.theme = document.getElementById('setTheme').value;
     settings.type = document.getElementById('setType').value;
     settings.suddenDeath = document.getElementById('setSuddenDeath').checked;
     settings.master = document.getElementById('setMaster').checked;
     settings.noBackspace = document.getElementById('setNoBackspace').checked;
+    settings.volume = parseFloat(document.getElementById('setVol').value);
+    
     gameTime = parseInt(document.getElementById('setTime').value) * 1000;
+    
     document.body.className = settings.theme === 'default' ? '' : settings.theme;
     modal.classList.remove('active');
     newGame();
 };
 
+// Start the first game
 newGame();
